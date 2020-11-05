@@ -2,7 +2,6 @@ from base64 import b64encode, b64decode
 import hashlib
 from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
-import time
 def encrypt(message , password):
     plain_text = message
 
