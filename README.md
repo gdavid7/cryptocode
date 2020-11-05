@@ -1,28 +1,25 @@
-# gKey
+# cryptokey
 
 Python library used to encrypt and decrypt strings in the simplest possible way, while also being incredibly secure.
 ## Requirements
 
 
 - **Python** 3 or later.
-- Several Python packages:
-	- **pycryptodomex**, to help encrypt and decrypt messages.
   
 ## Installation
 
 Install some Python utilities along with some libraries and other stuff:
 
 ~~~
-pip install pycryptodomex
-pip install gkey
+pip install cryptokey
 ~~~
 
 ## Basic usage
 Encrypting a message:
 
 ~~~
->>> import gkey
->>> myEncryptedMessage = gkey.encrypt("I like trains", "password123")
+>>> import cryptokey
+>>> myEncryptedMessage = cryptokey.encrypt("I like trains", "password123")
 >>> print(myEncryptedMessage)
 M+Wykmlub0z7FhEdmA==*PvAbXRNx0SiSDHHxLsKZ5w==*ihQM/fdkgrX3G+yOItyAUQ==*QFNDmuUP1ysgo01/P2MNpg==
 ~~~
@@ -31,8 +28,8 @@ The first parameter is the string you want to encrypt. The second parameter is t
 
 Decrypting a message"
 ~~~
->>> import gkey
->>> myDecryptedMessage = gkey.decrypt("M+Wykmlub0z7FhEdmA==*PvAbXRNx0SiSDHHxLsKZ5w==*ihQM/fdkgrX3G+yOItyAUQ==*QFNDmuUP1ysgo01/P2MNpg==", "password123")
+>>> import cryptokey
+>>> myDecryptedMessage = cryptokey.decrypt("M+Wykmlub0z7FhEdmA==*PvAbXRNx0SiSDHHxLsKZ5w==*ihQM/fdkgrX3G+yOItyAUQ==*QFNDmuUP1ysgo01/P2MNpg==", "password123")
 >>> print(myDecryptedMessage)
 I like trains
 ~~~
@@ -40,26 +37,26 @@ The first parameter is the encrypted string and the second parameter is the pass
 
 ## Example
 Here, we will be creating a simple "trial product key". This is useful if you have software that you would like people to use temporarily.
-In this example, we will be letting the user use the product for 2 hours. The password we will be using is ``gKey is amazing``.
+In this example, we will be letting the user use the product for 2 hours. The password we will be using is ``cryptokey is amazing``.
 
 Code on the server side:
 ~~~
-import gkey
+import cryptokey
 import time
 hours = 2
 messageToEncrypt = str(time.time() + hours * 60 * 60)
 ## Hours * 60 * 60 is necessary because we need to turn the hours into seconds, since the timestamp is in seconds.
-gkey.encrypt(messageToEncrypt, "gKey is amazing")
+cryptokey.encrypt(messageToEncrypt, "cryptokey is amazing")
 ~~~
 
 Code on the client side:
 ~~~
-import gkey
+import cryptokey
 import time
 import sys
 #Function to verify that the key is valid:
 def check_valid(key):
-    message = gkey.decrypt(key, 'gkey is amazing')
+    message = cryptokey.decrypt(key, 'cryptokey is amazing')
     if message == False:
         #The key is incorrect!
         return False
