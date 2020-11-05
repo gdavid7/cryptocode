@@ -80,9 +80,3 @@ def decrypt(enc_dict, password):
         return False
 
     return decrypted.decode('UTF-8')
-
-
-
-
-a = encrypt("I like trains","password123")
-print(a)
