@@ -6,14 +6,15 @@ Python library used to encrypt and decrypt strings in the simplest possible way,
 
 - **Python** 3 or later.
 - Several Python packages:
-	- **pycryptodome**, to help encrypt and decrypt messages.
+	- **pycryptodomex**, to help encrypt and decrypt messages.
   
 ## Installation
 
 Install some Python utilities along with some libraries and other stuff:
 
 ~~~
-pip install pycryptodome gkey
+pip install pycryptodomex
+pip install gkey
 ~~~
 
 ## Basic usage
