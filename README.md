@@ -11,7 +11,7 @@ Python library used to encrypt and decrypt strings in the simplest possible way,
 Install some Python utilities along with some libraries and other stuff:
 
 ~~~
-python -m pip install requests
+python -m pip install cryptocode
 ~~~
 
 ## Basic usage
