@@ -1,18 +1,41 @@
-from base64 import b64encode, b64decode
 import hashlib
+from typing import Union
+
 from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
-def encrypt(message , password):
-    plain_text = message
+
+
+def _encode_entries(salt: bytes, nonce: bytes, tag: bytes, cipher_text: bytes):
+    salt_len = str(len(salt)).encode("utf-8")
+    nonce_len = str(len(nonce)+len(salt)).encode("utf-8")
+    tag_len = str(len(tag)+len(nonce)+len(salt)).encode("utf-8")
+    return b";".join([salt_len, nonce_len, tag_len])+b"/"+salt+nonce+tag+cipher_text
+
+
+def _decode_entries(data: bytes):
+    len_sector, data_sector = data.split(b"/", 1)
+    salt_len, nonce_len, tag_len = map(int, len_sector.split(b";"))
+    salt = data_sector[0: salt_len]
+    nonce = data_sector[salt_len: nonce_len]
+    tag = data_sector[nonce_len: tag_len]
+    data = data_sector[tag_len:]
+    return (salt, nonce, tag), data
+
+
+def encrypt(message: Union[bytes, str], password: Union[bytes, str]):
+    if isinstance(message, str):
+        message = message.encode('utf-8')
+    if isinstance(password, str):
+        password = password.encode('utf-8')
 
     # generate a random salt
 
     salt = get_random_bytes(AES.block_size)
 
-    # use the Scrypt KDF to get a private key from the password
+    # use the SCrypt KDF to get a private key from the password
 
     private_key = hashlib.scrypt(
-        password.encode(),
+        password,
         salt=salt,
         n=2 ** 14,
         r=8,
@@ -26,60 +49,33 @@ def encrypt(message , password):
 
     # return a dictionary with the encrypted text
 
-    (cipher_text, tag) = \
-        cipher_config.encrypt_and_digest(bytes(plain_text, 'utf-8'))
-    encryptedDict = {
-        'cipher_text': b64encode(cipher_text).decode('utf-8'),
-        'salt': b64encode(salt).decode('utf-8'),
-        'nonce': b64encode(cipher_config.nonce).decode('utf-8'),
-        'tag': b64encode(tag).decode('utf-8'),
-        }
-    encryptedString = encryptedDict['cipher_text'] + '*' \
-        + encryptedDict['salt'] + '*' + encryptedDict['nonce'] + '*' \
-        + encryptedDict['tag']
-    return encryptedString
+    (cipher_text, tag) = cipher_config.encrypt_and_digest(message)
+
+    encrypted_string = _encode_entries(salt, cipher_config.nonce, tag, cipher_text)
+    return encrypted_string
 
 
-def decrypt(enc_dict, password):
-    enc_dict = enc_dict.split('*')
-    try:
-        enc_dict = {
-            'cipher_text': enc_dict[0],
-            'salt': enc_dict[1],
-            'nonce': enc_dict[2],
-            'tag': enc_dict[3],
-            }
+def decrypt(encrypted_data: bytes, password: Union[str, bytes]):
+    # decode the dictionary entries from base64
 
-        # decode the dictionary entries from base64
+    (salt, nonce, tag), cipher_text = _decode_entries(encrypted_data)
+    # generate the private key from the password and salt
 
-        salt = b64decode(enc_dict['salt'])
-        cipher_text = b64decode(enc_dict['cipher_text'])
-        nonce = b64decode(enc_dict['nonce'])
-        tag = b64decode(enc_dict['tag'])
+    private_key = hashlib.scrypt(
+        password.encode() if isinstance(password, str) else password,
+        salt=salt,
+        n=2 ** 14,
+        r=8,
+        p=1,
+        dklen=32,
+        )
 
-        # generate the private key from the password and salt
+    # create the cipher config
 
-        private_key = hashlib.scrypt(
-            password.encode(),
-            salt=salt,
-            n=2 ** 14,
-            r=8,
-            p=1,
-            dklen=32,
-            )
+    cipher = AES.new(private_key, AES.MODE_GCM, nonce=nonce)
 
-        # create the cipher config
+    # decrypt the cipher text
 
-        cipher = AES.new(private_key, AES.MODE_GCM, nonce=nonce)
+    decrypted = cipher.decrypt_and_verify(cipher_text, tag)
 
-        # decrypt the cipher text
-
-        decrypted = cipher.decrypt_and_verify(cipher_text, tag)
-    except:
-        return False
-
-    return decrypted.decode('UTF-8')
-
-
-
-
+    return decrypted
