@@ -1,5 +1,6 @@
 # Cryptocode
 [![Downloads](https://static.pepy.tech/badge/cryptocode)](https://pepy.tech/project/cryptocode)
+
 Python library used to encrypt and decrypt strings in the simplest possible way, while also being incredibly secure.
 ## Requirements
 
