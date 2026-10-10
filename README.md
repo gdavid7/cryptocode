@@ -5,7 +5,9 @@ Python library used to encrypt and decrypt strings in the simplest possible way,
 ## Requirements
 
 
-- **Python** 3 or later.
+- **Python** 3.10 or later (CI covers 3.10–3.14 on Linux, macOS, and Windows).
+- **pycryptodomex** 3.24.0 or later, installed automatically by pip.
+- Python must provide `hashlib.scrypt` through its OpenSSL build.
   
 ## Installation
 
@@ -122,3 +124,34 @@ def aes_gcm_decrypt(token: bytes, key: bytes, ttl=None) -> bytes:
 ~~~
 
 As you can see, this can be unnecessary if you only need the encoding for basic reasons. In summary, cryptocode is better for most people because it is an abstraction: it provides a simple input and output without the user needing to know how it works.
+
+## Development
+
+Create a virtual environment, then install and test:
+
+```sh
+python -m pip install -e .
+python -m unittest discover -s tests -v
+```
+
+Build and validate release artifacts with:
+
+```sh
+python -m pip install build twine
+python -m build --outdir artifacts
+python -m twine check artifacts/*
+```
+
+CI tests the installed wheel built from the source distribution. Dependabot checks
+Python dependencies and GitHub Actions monthly.
+
+## Changes in 0.2.0
+
+- Added packaging metadata and automated compatibility tests.
+- Decryption rejects extra fields, invalid Base64, and salt/nonce/tag lengths that
+  differ from the 16-byte values produced by cryptocode.
+- `decrypt` returns `False` for malformed ciphertext, failed authentication, or
+  authenticated content that is not UTF-8. Both arguments must be strings;
+  otherwise it raises `TypeError`. Runtime and dependency errors now propagate.
+- Existing ciphertext and the encryption parameters remain unchanged.
+- The supported Python minimum is now 3.10.
