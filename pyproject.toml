@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cryptocode"
+version = "0.2.0"
+description = "A simple library for encrypting and decrypting strings"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "gdavid7"}]
+dependencies = ["pycryptodomex>=3.24.0"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/gdavid7/cryptocode"
+Issues = "https://github.com/gdavid7/cryptocode/issues"
+
+[tool.setuptools]
+py-modules = ["cryptocode"]

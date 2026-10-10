@@ -41,45 +41,34 @@ def encrypt(message , password):
 
 
 def decrypt(enc_dict, password):
-    enc_dict = enc_dict.split('*')
+    """Decrypt a string; return False for malformed or unauthentic tokens.
+
+    Both arguments must be strings. Runtime and dependency errors propagate.
+    """
+    if not isinstance(enc_dict, str) or not isinstance(password, str):
+        raise TypeError("ciphertext and password must be strings")
+    fields = enc_dict.split('*')
+    if len(fields) != 4:
+        return False
     try:
-        enc_dict = {
-            'cipher_text': enc_dict[0],
-            'salt': enc_dict[1],
-            'nonce': enc_dict[2],
-            'tag': enc_dict[3],
-            }
-
-        # decode the dictionary entries from base64
-
-        salt = b64decode(enc_dict['salt'])
-        cipher_text = b64decode(enc_dict['cipher_text'])
-        nonce = b64decode(enc_dict['nonce'])
-        tag = b64decode(enc_dict['tag'])
-
-        # generate the private key from the password and salt
-
-        private_key = hashlib.scrypt(
-            password.encode(),
-            salt=salt,
-            n=2 ** 14,
-            r=8,
-            p=1,
-            dklen=32,
-            )
-
-        # create the cipher config
-
-        cipher = AES.new(private_key, AES.MODE_GCM, nonce=nonce)
-
-        # decrypt the cipher text
-
-        decrypted = cipher.decrypt_and_verify(cipher_text, tag)
-    except:
+        cipher_text, salt, nonce, tag = (
+            b64decode(field, validate=True) for field in fields
+        )
+    except ValueError:
+        return False
+    if any(len(value) != AES.block_size for value in (salt, nonce, tag)):
         return False
 
-    return decrypted.decode('UTF-8')
-
-
-
-
+    # Keep the original parameters so existing ciphertext remains readable.
+    private_key = hashlib.scrypt(
+        password.encode(), salt=salt, n=2 ** 14, r=8, p=1, dklen=32
+    )
+    cipher = AES.new(private_key, AES.MODE_GCM, nonce=nonce)
+    try:
+        decrypted = cipher.decrypt_and_verify(cipher_text, tag)
+    except ValueError:
+        return False
+    try:
+        return decrypted.decode('utf-8')
+    except UnicodeDecodeError:
+        return False
